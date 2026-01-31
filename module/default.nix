@@ -68,7 +68,13 @@ in
               default = null;
               description = "Sets the server password. Leave `null` for no password";
             };
-            
+
+            passwordFile = mkOption {
+              type = types.nullOr types.path;
+              default = null;
+              description = "File containing the server password. Takes precedence over `password`.";
+            };
+
             world = mkOption {
               type = types.nullOr types.path;
               default = null;
@@ -198,7 +204,8 @@ in
 
           (valFlag "port" conf.port)
           (valFlag "players" conf.players)
-          (valFlag "password" conf.password)
+          # password is handled separately in startScript when passwordFile is used
+          (lib.optionalString (conf.passwordFile == null) (valFlag "password" conf.password))
           (valFlag "world" conf.world)
           (valFlag "autocreate" (builtins.getAttr conf.autocreate worldSizeMap))
           (valFlag "banlist" conf.banlist)
@@ -214,6 +221,15 @@ in
         ];
 
         tmuxCmd = "${getExe pkgs.tmux} -S ${escapeShellArg cfg.dataDir}/${name}.sock";
+
+        # Start script handles passwordFile by reading at runtime
+        startScript = pkgs.writeShellScript "tmodloader-${name}-start" ''
+          PASSWORD_FLAG=""
+          ${lib.optionalString (conf.passwordFile != null) ''
+            PASSWORD_FLAG="-password \"$(cat ${escapeShellArg conf.passwordFile})\""
+          ''}
+          exec ${tmuxCmd} new -d ${getExe conf.package} ${concatStringsSep " " flags} $PASSWORD_FLAG
+        '';
 
         updateWorkshop = pkgs.writeShellApplication {
           name = "tmodloader-${name}-update-workshop";
@@ -312,7 +328,7 @@ in
             UMask = 7;
 
             ExecStartPre = "${startPreScript}";
-            ExecStart = "${tmuxCmd} new -d ${getExe conf.package} ${concatStringsSep " " flags}";
+            ExecStart = "${startScript}";
             ExecStop = "${getExe stopScript} $MAINPID";
           };
 
