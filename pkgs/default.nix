@@ -1,6 +1,6 @@
 { pkgs, stdenv, lib, fetchurl, dotnet-sdk_8 }:
 let
-  version = "v2025.11.3.1";
+  version = "v2025.12.3.0";
   name = "tmodloader-${version}";
   url = "https://github.com/tModLoader/tModLoader/releases/download/${version}/tModLoader.zip";
 
@@ -12,7 +12,7 @@ stdenv.mkDerivation {
 
   src = fetchurl {
     inherit url;
-    sha256 = "sha256-XncWbt4E+fGvS9GPAE5gZ+onKDj5TUO++QSUZ0sIlOw==";
+    sha256 = "sha256-YN1NjNvT7YxeAkaAchSmslUYENn8ImIZIIMIKzRqKfw=";
   };
 
   unpackPhase = "unzip $src";
