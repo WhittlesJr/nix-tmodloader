@@ -226,7 +226,7 @@ in
         startScript = pkgs.writeShellScript "tmodloader-${name}-start" ''
           PASSWORD_FLAG=""
           ${lib.optionalString (conf.passwordFile != null) ''
-            PASSWORD_FLAG="-password \"$(cat ${escapeShellArg conf.passwordFile})\""
+            PASSWORD_FLAG="-password $(cat ${escapeShellArg conf.passwordFile})"
           ''}
           exec ${tmuxCmd} new -d ${getExe conf.package} ${concatStringsSep " " flags} $PASSWORD_FLAG
         '';
